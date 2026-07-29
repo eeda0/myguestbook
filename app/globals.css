@@ -56,7 +56,7 @@ button {
 }
 
 .guestbook-card {
-  width: min(100%, 600px);
+  width: min(100%, 700px);
   background: rgba(248, 250, 244, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 32px;
@@ -146,6 +146,13 @@ textarea {
 .error-message {
   color: #b91c1c;
   font-size: 0.95rem;
+  margin: 0;
+}
+
+.success-message {
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 600;
   margin: 0;
 }
 
