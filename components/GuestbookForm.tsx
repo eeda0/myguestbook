@@ -41,7 +41,7 @@ export default function GuestbookForm() {
 
     setName('');
     setMessage('');
-    setSuccessMessage('메시지가 성공적으로 등록되었습니다.');
+    setSuccessMessage('따뜻한 흔적을 남겨주셔서 감사해요.');
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('guestbook:created'));
     }

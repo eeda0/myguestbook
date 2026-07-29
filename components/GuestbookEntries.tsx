@@ -15,6 +15,7 @@ export default function GuestbookEntries() {
   const [loading, setLoading] = useState(true);
   const [likedIds, setLikedIds] = useState<Record<number, boolean>>({});
   const [counts, setCounts] = useState<Record<number, number>>({});
+  const [poppingId, setPoppingId] = useState<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -80,52 +81,63 @@ export default function GuestbookEntries() {
             <article key={entry.id} className="entry-card">
               <div className="entry-head">
                 <span className="entry-name">{entry.name}</span>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <time className="entry-date">
-                  {new Date(entry.created_at).toLocaleString('ko-KR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: 'Asia/Seoul',
-                  })}
-                  </time>
-                  <button
-                    className={`like-button ${likedIds[entry.id] ? 'liked' : ''}`}
-                    onClick={async () => {
-                      const currentlyLiked = !!likedIds[entry.id];
-                      const nextLiked = !currentlyLiked;
-                      const delta = nextLiked ? 1 : -1;
-                      try {
-                        const res = await fetch('/api/guestbook/like', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ id: entry.id, delta }),
-                        });
-                        if (!res.ok) throw new Error('Like API failed');
-                        const updated = await res.json();
-                        const nextLikedIds = { ...likedIds, [entry.id]: nextLiked };
-                        const nextCounts = { ...counts, [entry.id]: updated.likes ?? (counts[entry.id] || 0) + delta };
-                        setLikedIds(nextLikedIds);
-                        setCounts(nextCounts);
+                <span className="like-wrap">
+                    <button
+                      className={`like-button ${likedIds[entry.id] ? 'liked' : ''}`}
+                      aria-label="좋아요"
+                      onClick={async () => {
+                        const currentlyLiked = !!likedIds[entry.id];
+                        const nextLiked = !currentlyLiked;
+                        const delta = nextLiked ? 1 : -1;
+                        if (nextLiked) {
+                          setPoppingId(entry.id);
+                        }
                         try {
-                          localStorage.setItem('guestbook_liked_ids', JSON.stringify(nextLikedIds));
-                          localStorage.setItem('guestbook_like_counts', JSON.stringify(nextCounts));
+                          const res = await fetch('/api/guestbook/like', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: entry.id, delta }),
+                          });
+                          if (!res.ok) throw new Error('Like API failed');
+                          const updated = await res.json();
+                          const nextLikedIds = { ...likedIds, [entry.id]: nextLiked };
+                          const nextCounts = { ...counts, [entry.id]: updated.likes ?? (counts[entry.id] || 0) + delta };
+                          setLikedIds(nextLikedIds);
+                          setCounts(nextCounts);
+                          try {
+                            localStorage.setItem('guestbook_liked_ids', JSON.stringify(nextLikedIds));
+                            localStorage.setItem('guestbook_like_counts', JSON.stringify(nextCounts));
+                          } catch (e) {
+                            console.error(e);
+                          }
                         } catch (e) {
                           console.error(e);
                         }
-                      } catch (e) {
-                        console.error(e);
-                      }
-                    }}
-                  >
-                    <span aria-hidden>♥</span>
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        className={poppingId === entry.id ? 'heart-pop' : ''}
+                        onAnimationEnd={() => setPoppingId((current) => (current === entry.id ? null : current))}
+                      >
+                        ♥
+                      </span>
+                    </button>
                     <span className="like-count">{counts[entry.id] || 0}</span>
-                  </button>
-                </div>
+                  </span>
               </div>
               <p className="entry-message">{entry.message}</p>
+              <time className="entry-date">
+                {new Date(entry.created_at).toLocaleString('ko-KR', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone: 'Asia/Seoul',
+                })}
+              </time>
             </article>
           ))
         )}
