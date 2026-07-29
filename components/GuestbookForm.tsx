@@ -79,7 +79,7 @@ export default function GuestbookForm() {
         {successMessage ? <p className="success-message">{successMessage}</p> : null}
 
         <button type="submit" className="submit-button" disabled={isSubmitting}>
-          {isSubmitting ? '저장 중...' : '등록'}
+          {isSubmitting ? '저장 중...' : '보내기'}
         </button>
       </form>
     </section>
