@@ -23,7 +23,7 @@ export type Post = {
 
 export async function getPosts() {
   const { data, error } = await supabaseAdmin
-    .from<Post>('posts')
+    .from('posts')
     .select('id, name, message, created_at, likes')
     .order('created_at', { ascending: false });
 
@@ -31,12 +31,12 @@ export async function getPosts() {
     throw error;
   }
 
-  return data ?? [];
+  return (data as Post[]) ?? [];
 }
 
 export async function createPost({ name, message }: { name: string; message: string }) {
   const { data, error } = await supabaseAdmin
-    .from<Post>('posts')
+    .from('posts')
     .insert({ name, message })
     .select()
     .single();
@@ -45,18 +45,18 @@ export async function createPost({ name, message }: { name: string; message: str
     throw error;
   }
 
-  return data;
+  return data as Post;
 }
 
 export async function updatePostLikes(id: number, delta: number) {
   // fetch current likes
-  const { data: rows, error: selErr } = await supabaseAdmin.from<Post>('posts').select('likes').eq('id', id).limit(1).single();
+  const { data: rows, error: selErr } = await supabaseAdmin.from('posts').select('likes').eq('id', id).limit(1).single();
   if (selErr) throw selErr;
   const current = (rows as any)?.likes ?? 0;
   const next = Math.max(0, current + delta);
 
   const { data, error } = await supabaseAdmin
-    .from<Post>('posts')
+    .from('posts')
     .update({ likes: next })
     .eq('id', id)
     .select()
@@ -64,7 +64,7 @@ export async function updatePostLikes(id: number, delta: number) {
 
   if (error) throw error;
 
-  return data;
+  return data as Post;
 }
 
 export async function updatePost(id: number, { name, message }: { name?: string; message?: string }) {
@@ -73,7 +73,7 @@ export async function updatePost(id: number, { name, message }: { name?: string;
   if (message !== undefined) payload.message = message;
 
   const { data, error } = await supabaseAdmin
-    .from<Post>('posts')
+    .from('posts')
     .update(payload)
     .eq('id', id)
     .select()
@@ -83,12 +83,12 @@ export async function updatePost(id: number, { name, message }: { name?: string;
     throw error;
   }
 
-  return data;
+  return data as Post;
 }
 
 export async function deletePost(id: number) {
   const { error } = await supabaseAdmin
-    .from<Post>('posts')
+    .from('posts')
     .delete()
     .eq('id', id);
 
